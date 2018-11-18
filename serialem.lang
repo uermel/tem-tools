@@ -1,0 +1,485 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+Author: Utz Ermel 
+Copyright (C) 2018 Utz Ermel <ermel@biophysik.org>
+
+You should have received a copy of the GNU Lesser General Public
+License along with this file 
+
+-->
+<language id="serialem" _name="serialem" version="2.0" _section="Sci">
+	<metadata>
+		<property name="mimetypes">text/x-serialem</property>
+		<property name="globs">*.sem</property>
+		<property name="line-comment-start">#</property>
+	</metadata>
+
+	<styles>
+		<style id="comment"           _name="Comment"            		map-to="serialem:comment"/>
+		<style id="keyword"           _name="Keyword"               map-to="serialem:keyword"/>
+		<style id="statement"					_name="Statement"      				map-to="def:statement"/>
+		<style id="string"            _name="String"                map-to="def:string"/>
+		<style id="variable"          _name="Variable"              map-to="serialem:var"/>
+		<style id="output"            _name="Output"                map-to="def:string"/>
+		<style id="builtin-function"  _name="Builtin Function"      map-to="serialem:builtin"/>
+	</styles>
+
+	<definitions>
+		<define-regex id="anything">.*</define-regex>
+		<define-regex id="identifier">[_a-zA-Z][_a-zA-Z0-9]*</define-regex>
+		<define-regex id="number">[1-9][0-9]*</define-regex>
+		<define-regex id="var-call">[1-9][0-9]*</define-regex>
+		<define-regex id="float" extended="true">
+			( (\d+)?\.\d+ | \d+\. ) |
+			( (\d+|(\d+)?\.\d+|\d+\.)[eE][+-]?\d+ )
+		</define-regex>
+
+		<context id="serialem" class="no-spell-check">
+			<include>
+				<context ref="line-comment"/>
+				<context ref="keywords"/>
+				<context ref="variable-assignment"/>
+				<context ref="variable-call"/>
+				<context ref="function-call"/>
+				<context ref="outputs"/>
+				<context ref="statement"/>
+			</include>
+		</context>
+
+		<!-- Start from sh.lang -->
+		<!--
+		 Author: Silian Della Ragione <silian87@gechi.it>
+		 Copyright (C) 2005 Silian Della Ragione <silian87@gechi.it>
+		 Copyright (C) 2008 Steve Frécinaux <code@istique.net>
+
+		 GtkSourceView is free software; you can redistribute it and/or
+		 modify it under the terms of the GNU Lesser General Public
+		 License as published by the Free Software Foundation; either
+		 version 2.1 of the License, or (at your option) any later version.
+
+		 GtkSourceView is distributed in the hope that it will be useful,
+		 but WITHOUT ANY WARRANTY; without even the implied warranty of
+		 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+		 Lesser General Public License for more details.
+
+		 You should have received a copy of the GNU Lesser General Public License
+		 along with this library; if not, see <http://www.gnu.org/licenses/>.
+
+		-->
+		<context id="line-comment" style-ref="comment" end-at-line-end="true" class="comment" class-disabled="no-spell-check">
+			<start>(?&lt;!\S)#</start>
+			<include>
+				<context ref="def:in-comment"/>
+			</include>
+		</context>
+		<!-- End from sh.lang -->
+
+		<context id="statement" style-ref="statement">
+			<match>(\{|\}|\[|\]|\(|\))</match>
+		</context>
+
+		<context id="variable-assignment" end-at-line-end="true">
+			<start>(\%{identifier}) (=)</start>
+			<end>$</end>
+			<include>
+				<context sub-pattern="1" where="start" style-ref="variable"/>
+				<context sub-pattern="2" where="start"/>
+				<context ref="variable-call"/>
+				<context ref="statement"/>
+				<context ref="line-comment"/>
+				<context ref="keywords"/>
+			</include>
+		</context>	
+
+		<context id="keywords" style-ref="keyword">
+			<prefix>(?i)\%[</prefix>
+			<keyword>and</keyword>
+			<keyword>break</keyword>
+			<keyword>CallFunction</keyword>
+			<keyword>CallScript</keyword>
+			<keyword>CallMacro</keyword>
+			<keyword>Call</keyword>
+			<keyword>continue</keyword>
+			<keyword>DoScript</keyword>
+			<keyword>DoMacro</keyword>
+			<keyword>elseif</keyword>
+			<keyword>else</keyword>
+			<keyword>endfunction</keyword>
+			<keyword>endif</keyword>
+			<keyword>endloop</keyword>
+			<keyword>exit</keyword>
+			<keyword>function</keyword>
+			<keyword>if</keyword>
+			<keyword>KeyBreak</keyword>
+			<keyword>loop</keyword>
+			<keyword>OnStopCallFunc</keyword>
+			<keyword>or</keyword>
+			<keyword>return</keyword>
+			<keyword>repeat</keyword>
+			<keyword>SkipTo</keyword>
+			<keyword>MacroName</keyword>
+			<keyword>SQRT</keyword>
+			<keyword>SIN</keyword>
+			<keyword>COS</keyword>
+			<keyword>TAN</keyword>
+			<keyword>ATAN</keyword>
+			<keyword>LOG</keyword>
+			<keyword>LOG10</keyword>
+			<keyword>EXP</keyword>
+			<keyword>ABS</keyword>
+			<keyword>NEARINT</keyword>
+			<keyword>ATAN2</keyword>
+			<keyword>MODULO</keyword>
+			<keyword>POWER</keyword>
+			<keyword>ROUND</keyword>
+			<keyword>DIFFABS</keyword>
+			<keyword>FRACDIFF</keyword>
+		</context>
+
+		<context id="variable-call" style-ref="variable">
+			<match>(\$\%{identifier})</match>
+		</context>
+
+		<context id="outputs" style-ref="output" end-at-line-end="true">
+			<start>(?i)(echo)</start>
+			<end>$</end>
+			<include>
+				<context sub-pattern="1" where="start" style-ref="builtin-function"/>
+				<context ref="variable-call"/>
+			</include>
+		</context>
+
+		<context id="builtin-functions" style-ref="builtin-function">
+			<prefix>^\s*(?i)\%[</prefix>
+			<keyword>LongName</keyword>
+			<keyword>Delay</keyword>
+			<keyword>WaitForMidnight</keyword>
+			<keyword>Pause</keyword>
+			<keyword>YesNoBox</keyword>
+			<keyword>EnterOneNumber</keyword>
+			<keyword>EnterDefaultedNumber</keyword>
+			<keyword>FlashDisplay</keyword>
+			<keyword>Verbose</keyword>
+			<keyword>SuppressReports</keyword>
+			<keyword>ErrorsToLog</keyword>
+			<keyword>NoMessageBoxOnError</keyword>
+			<keyword>ClearPersistentVars</keyword>
+			<keyword>IsVariableDefined</keyword>
+			<keyword>LocalVar</keyword>
+			<keyword>LocalLoopIndexes</keyword>
+			<keyword>Require</keyword>
+			<keyword>Test</keyword>
+			<keyword>PauseIfFailed</keyword>
+			<keyword>AbortIfFailed</keyword>
+			<keyword>V</keyword>
+			<keyword>F</keyword>
+			<keyword>T</keyword>
+			<keyword>R</keyword>
+			<keyword>L</keyword>
+			<keyword>M</keyword>
+			<keyword>View</keyword>
+			<keyword>Focus</keyword>
+			<keyword>Trial</keyword>
+			<keyword>Record</keyword>
+			<keyword>Preview</keyword>
+			<keyword>Montage</keyword>
+			<keyword>Search</keyword>
+			<keyword>PreCookMontage</keyword>
+			<keyword>SetExposure</keyword>
+			<keyword>SetBinning</keyword>
+			<keyword>SetCameraArea</keyword>
+			<keyword>SetCenteredSize</keyword>
+			<keyword>SetContinuous</keyword>
+			<keyword>SetSTEMDetectors</keyword>
+			<keyword>SetProcessing</keyword>
+			<keyword>SetK2ReadMode</keyword>
+			<keyword>SetFrameTime</keyword>
+			<keyword>RestoreCameraSet</keyword>
+			<keyword>StopContinuous</keyword>
+			<keyword>ReportContinuous</keyword>
+			<keyword>UseContinuousFrames</keyword>
+			<keyword>WaitForNextFrame</keyword>
+			<keyword>StartFrameWaitTimer</keyword>
+			<keyword>SetLiveSettleFraction</keyword>
+			<keyword>CameraProperties</keyword>
+			<keyword>SelectCamera</keyword>
+			<keyword>RetractCamera</keyword>
+			<keyword>OppositeFocus</keyword>
+			<keyword>OppositeTrial</keyword>
+			<keyword>StepFocusNextShot</keyword>
+			<keyword>SmoothFocusNextShot</keyword>
+			<keyword>EarlyReturnNextShot</keyword>
+			<keyword>GetDeferredSum</keyword>
+			<keyword>RecordAndTiltUp</keyword>
+			<keyword>RecordAndTiltDown</keyword>
+			<keyword>TiltDuringRecord</keyword>
+			<keyword>DeferStackingNextShot</keyword>
+			<keyword>OpenDECameraCover</keyword>
+			<keyword>SetDECamFrameRate</keyword>
+			<keyword>UpdateHWDarkRef</keyword>
+			<keyword>ReportK2FileParams</keyword>
+			<keyword>ReportCountScaling</keyword>
+			<keyword>SetDivideBy2</keyword>
+			<keyword>ReportNumFramesSaved</keyword>
+			<keyword>ReportFrameAliParams</keyword>
+			<keyword>ReportFrameAli2</keyword>
+			<keyword>Copy</keyword>
+			<keyword>Show</keyword>
+			<keyword>CropImage</keyword>
+			<keyword>FFT</keyword>
+			<keyword>ImageProperties</keyword>
+			<keyword>ImageLowDoseSet</keyword>
+			<keyword>ReportMeanCounts</keyword>
+			<keyword>ElectronStats</keyword>
+			<keyword>SubareaMean</keyword>
+			<keyword>QuadrantMeans</keyword>
+			<keyword>S</keyword>
+			<keyword>Save</keyword>
+			<keyword>SetDirectory</keyword>
+			<keyword>ReportDirectory</keyword>
+			<keyword>UserSetDirectory</keyword>
+			<keyword>MakeDirectory</keyword>
+			<keyword>MakeDateTimeDir</keyword>
+			<keyword>SetNewFileType</keyword>
+			<keyword>OpenNewFile</keyword>
+			<keyword>OpenNewMontage</keyword>
+			<keyword>SetupWaffleMontage</keyword>
+			<keyword>SaveToOtherFile</keyword>
+			<keyword>EnterNameOpenFile</keyword>
+			<keyword>ChooserForNewFile</keyword>
+			<keyword>OpenFrameSumFile</keyword>
+			<keyword>AllowFileOverwrite</keyword>
+			<keyword>OpenOldFile</keyword>
+			<keyword>ReadFile</keyword>
+			<keyword>ReadOtherFile</keyword>
+			<keyword>RetryReadOtherFile</keyword>
+			<keyword>CloseFile</keyword>
+			<keyword>SwitchToFile</keyword>
+			<keyword>RemoveFile</keyword>
+			<keyword>ReportFileZsize</keyword>
+			<keyword>ReadTextFile</keyword>
+			<keyword>SetMontageParams</keyword>
+			<keyword>AddToAutodoc</keyword>
+			<keyword>WriteAutodoc</keyword>
+			<keyword>AddToFrameMdoc</keyword>
+			<keyword>WriteFrameMdoc</keyword>
+			<keyword>ReportFrameMdocOpen</keyword>
+			<keyword>SaveLogOpenNew</keyword>
+			<keyword>ReportCurrentFilename</keyword>
+			<keyword>ReportLastFrameFile</keyword>
+			<keyword>U</keyword>
+			<keyword>TiltUp</keyword>
+			<keyword>D</keyword>
+			<keyword>TiltDown</keyword>
+			<keyword>TiltTo</keyword>
+			<keyword>Tilt</keyword>
+			<keyword>TiltBy</keyword>
+			<keyword>BackgroundTilt</keyword>
+			<keyword>ReportTiltAngle</keyword>
+			<keyword>MoveStage</keyword>
+			<keyword>MoveStageTo</keyword>
+			<keyword>ReportStageXYZ</keyword>
+			<keyword>ReportStageBusy</keyword>
+			<keyword>ChangeFocus</keyword>
+			<keyword>SetDefocus</keyword>
+			<keyword>SetAbsoluteFocus</keyword>
+			<keyword>SetStandardFocus</keyword>
+			<keyword>SetObjFocus</keyword>
+			<keyword>ReportDefocus</keyword>
+			<keyword>ReportAbsoluteFocus</keyword>
+			<keyword>ReportFocus</keyword>
+			<keyword>SetEucentricFocus</keyword>
+			<keyword>CalEucentricFocus</keyword>
+			<keyword>SaveFocus</keyword>
+			<keyword>RestoreFocus</keyword>
+			<keyword>ResetDefocus</keyword>
+			<keyword>SetMag</keyword>
+			<keyword>SetMagIndex</keyword>
+			<keyword>ChangeMag</keyword>
+			<keyword>ReportMag</keyword>
+			<keyword>ReportMagIndex</keyword>
+			<keyword>ReportCameraLength</keyword>
+			<keyword>SetCamLenIndex</keyword>
+			<keyword>SetMagAndIntensity</keyword>
+			<keyword>ChangeMagAndIntensity</keyword>
+			<keyword>IncMagIfFoundPixel</keyword>
+			<keyword>SetSpotSize</keyword>
+			<keyword>ReportSpotSize</keyword>
+			<keyword>SetPercentC2</keyword>
+			<keyword>IncPercentC2</keyword>
+			<keyword>ReportPercentC2</keyword>
+			<keyword>ReportIlluminatedArea</keyword>
+			<keyword>SetIlluminatedArea</keyword>
+			<keyword>ReportImageDistanceOffset</keyword>
+			<keyword>SetImageDistanceOffset</keyword>
+			<keyword>SetIntensityForMean</keyword>
+			<keyword>SetExposureForMean</keyword>
+			<keyword>SetIntensityByLastTilt</keyword>
+			<keyword>ChangeIntensityBy</keyword>
+			<keyword>SetAlpha</keyword>
+			<keyword>ReportAlpha</keyword>
+			<keyword>SetBeamShift</keyword>
+			<keyword>ReportBeamShift</keyword>
+			<keyword>SetBeamTilt</keyword>
+			<keyword>ReportBeamTilt</keyword>
+			<keyword>SetProbeMode</keyword>
+			<keyword>ReportProbeMode</keyword>
+			<keyword>SetImageShift</keyword>
+			<keyword>ImageShiftByPixels</keyword>
+			<keyword>ImageShiftByUnits</keyword>
+			<keyword>ImageShiftByMicrons</keyword>
+			<keyword>ReportImageShift</keyword>
+			<keyword>SetObjectiveStigmator</keyword>
+			<keyword>ReportObjectiveStigmator</keyword>
+			<keyword>SetBeamBlank</keyword>
+			<keyword>NormalizeLenses</keyword>
+			<keyword>NormalizeAllLenses</keyword>
+			<keyword>ReportColumnOrGunValve</keyword>
+			<keyword>SetColumnOrGunValve</keyword>
+			<keyword>ScreenUp</keyword>
+			<keyword>ScreenDown</keyword>
+			<keyword>ReportScreen</keyword>
+			<keyword>ReportLens</keyword>
+			<keyword>ReportDeflector</keyword>
+			<keyword>ManualFilmExposure</keyword>
+			<keyword>ExposeFilm</keyword>
+			<keyword>SpecialExposeFilm</keyword>
+			<keyword>SetupMessageBox</keyword>
+			<keyword>ShowMessageOnScope</keyword>
+			<keyword>SetSlitWidth</keyword>
+			<keyword>SetSlitIn</keyword>
+			<keyword>SetEnergyLoss</keyword>
+			<keyword>ChangeEnergyLoss</keyword>
+			<keyword>ReportEnergyFilter</keyword>
+			<keyword>SetJeolGIF</keyword>
+			<keyword>ReportJeolGIF</keyword>
+			<keyword>LoadCartridge</keyword>
+			<keyword>UnloadCartridge</keyword>
+			<keyword>ReportSlotStatus</keyword>
+			<keyword>AreDewarsFilling</keyword>
+			<keyword>DewarsRemainingTime</keyword>
+			<keyword>RefrigerantLevel</keyword>
+			<keyword>IsPVPRunning</keyword>
+			<keyword>LongOperation</keyword>
+			<keyword>SelectPiezo</keyword>
+			<keyword>ReportPiezoXY</keyword>
+			<keyword>ReportPiezoZ</keyword>
+			<keyword>MovePiezoXY</keyword>
+			<keyword>MovePiezoZ</keyword>
+			<keyword>A</keyword>
+			<keyword>Autoalign</keyword>
+			<keyword>AlignTo</keyword>
+			<keyword>ClearAlignment</keyword>
+			<keyword>ConicalAlignTo</keyword>
+			<keyword>ReportAlignTrimming</keyword>
+			<keyword>ReportAlignShift</keyword>
+			<keyword>ReportShiftDiffFrom</keyword>
+			<keyword>ReportAccumShift</keyword>
+			<keyword>ResetAccumShift</keyword>
+			<keyword>G</keyword>
+			<keyword>Autofocus</keyword>
+			<keyword>IncTargetDefocus</keyword>
+			<keyword>SetTargetDefocus</keyword>
+			<keyword>ReportAutofocusOffset</keyword>
+			<keyword>SetAutofocusOffset</keyword>
+			<keyword>BeamTiltDirection</keyword>
+			<keyword>OppositeAutofocus</keyword>
+			<keyword>FocusChangeLimits</keyword>
+			<keyword>AbsoluteFocusLimits</keyword>
+			<keyword>ReportFocusDrift</keyword>
+			<keyword>ReportAutofocus</keyword>
+			<keyword>ReportTargetDefocus</keyword>
+			<keyword>CorrectAstigmatism</keyword>
+			<keyword>CorrectComa</keyword>
+			<keyword>ZemlinTableau</keyword>
+			<keyword>GoToLowDoseArea</keyword>
+			<keyword>SetLowDoseMode</keyword>
+			<keyword>ReportLowDose</keyword>
+			<keyword>SetLDContinuousUpdate</keyword>
+			<keyword>SetAxisPosition</keyword>
+			<keyword>ResetImageShift</keyword>
+			<keyword>ResetShiftIfAbove</keyword>
+			<keyword>Eucentricity</keyword>
+			<keyword>ReportLastAxisOffset</keyword>
+			<keyword>WalkUpTo</keyword>
+			<keyword>ReverseTilt</keyword>
+			<keyword>RefineZLP</keyword>
+			<keyword>AutocenterBeam</keyword>
+			<keyword>CookSpecimen</keyword>
+			<keyword>WaitForDose</keyword>
+			<keyword>CenterBeamFromImage</keyword>
+			<keyword>CalibrateImageShift</keyword>
+			<keyword>ShiftCalSkipLensNorm</keyword>
+			<keyword>FindPixelSize</keyword>
+			<keyword>QuickFlyback</keyword>
+			<keyword>ShiftImageForDrift</keyword>
+			<keyword>NewMap</keyword>
+			<keyword>MoveToNavItem</keyword>
+			<keyword>RealignToNavItem</keyword>
+			<keyword>RealignToOtherItem</keyword>
+			<keyword>ForceCenterRealign</keyword>
+			<keyword>ShiftItemsByAlignment</keyword>
+			<keyword>ShiftItemsByCurrentDiff</keyword>
+			<keyword>ShiftItemsByMicrons</keyword>
+			<keyword>UpdateItemZ</keyword>
+			<keyword>UpdateGroupZ</keyword>
+			<keyword>ReportNavItem</keyword>
+			<keyword>ReportOtherItem</keyword>
+			<keyword>ReportGroupStatus</keyword>
+			<keyword>ReportNumNavAcquire</keyword>
+			<keyword>ItemIndexWithLabel</keyword>
+			<keyword>ItemIndexWithNote</keyword>
+			<keyword>SetNavRegistration</keyword>
+			<keyword>ChangeItemRegistration</keyword>
+			<keyword>ItemForSuperCoord</keyword>
+			<keyword>SkipPiecesOutsideItem</keyword>
+			<keyword>SuffixForExtraFile</keyword>
+			<keyword>SkipAcquiringNavItem</keyword>
+			<keyword>SkipAcquiringGroup</keyword>
+			<keyword>CircleFromPoints</keyword>
+			<keyword>ReportClock</keyword>
+			<keyword>ResetClock</keyword>
+			<keyword>ReportMinuteTime</keyword>
+			<keyword>ReportTickTime</keyword>
+			<keyword>ElapsedTickTime</keyword>
+			<keyword>ProgramTimeStamps</keyword>
+			<keyword>ListPluginCalls</keyword>
+			<keyword>MailSubject</keyword>
+			<keyword>SendEmail</keyword>
+			<keyword>ErrorBoxSendEmail</keyword>
+			<keyword>RunInShell</keyword>
+			<keyword>SetProperty</keyword>
+			<keyword>ReportUserSetting</keyword>
+			<keyword>SetUserSetting</keyword>
+		</context>
+
+		<context id="buffers" style-ref="statement">
+			<prefix>[\S]*[\s]*(?i)\%[</prefix>
+			<keyword>A</keyword>
+			<keyword>B</keyword>
+			<keyword>C</keyword>
+			<keyword>D</keyword>
+			<keyword>E</keyword>
+			<keyword>F</keyword>
+			<keyword>G</keyword>
+			<keyword>H</keyword>
+			<keyword>I</keyword>
+			<keyword>J</keyword>
+			<keyword>K</keyword>
+			<keyword>L</keyword>
+			<keyword>M</keyword>
+			<keyword>N</keyword>
+			<keyword>O</keyword>
+			<keyword>P</keyword>
+		</context>
+
+		<context id="function-call">
+			<include>
+				<context ref="builtin-functions" />
+				<context ref="buffers"/>
+			</include>
+		</context>
+
+	</definitions>
+</language>
